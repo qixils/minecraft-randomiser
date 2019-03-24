@@ -83,7 +83,7 @@ for dirpath, dirs, files in os.walk(resourcepack+"/assets"):
         elif dirpath == resourcepack+"/assets/minecraft/shaders/program" and randomiseshaders:
             shaders[file.split('.')[1]].append(fullfilepath)
 
-if randomisetextures or randomisefont:
+if (randomisetextures or randomisefont) and images != {}:
     print("Randomising textures/fonts")
     for res, textures in images.items():
         shuffled = list(textures)
@@ -122,7 +122,7 @@ if randomisetextures or randomisefont:
 
             texturenum += 1
 
-if randomisesounds:
+if randomisesounds and sounds != []:
     print("Randomising sounds")
     shufflesounds = list(sounds)
     random.shuffle(shufflesounds)
@@ -134,7 +134,7 @@ if randomisesounds:
         #print(f"{shufflesounds[soundcount]} -> {destfile}")
         soundcount += 1
 
-if randomisetext:
+if randomisetext and (languages != [] or specialtexts != []):
     print("Randomising text")
     langvalues = []
 
@@ -177,7 +177,7 @@ if randomisetext:
         with open(destpath, 'w') as output:
             output.write('\n'.join(outputlines))
 
-if randomiseshaders:
+if randomiseshaders and shaders != {'vsh': [], 'fsh': [], 'json': []}:
     print("Randomising shaders")
     for ftype, shaderfiles in shaders.items():
         shufshad = list(shaderfiles)
@@ -190,8 +190,10 @@ if randomiseshaders:
             shadnumber += 1
 
 print("Creating meta files")
-shutil.copyfile(resourcepack+'/pack.png', 'shuffled/pack.png')
+if os.path.exists(resourcepack+'/pack.png'):
+    shutil.copyfile(resourcepack+'/pack.png', 'shuffled/pack.png')
 
+makepath('shuffled/pack.mcmeta')
 with open("shuffled/pack.mcmeta", "w") as descfile:
     descfile.write('{"pack":{"pack_format":4,"description":"Minecraft Shuffled by noahkiq"}}')
 
