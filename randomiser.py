@@ -23,8 +23,10 @@ randomiseshaders = args.shaders
 
 if resourcepack == "shuffle":
     print("The input resource pack may not be named 'shuffle'.")
+    sys.exit()
 if os.path.exists("shuffle/"):
-    print("Please remove the 'shuffle' folder.")
+    print("Please remove the 'shuffle' folder before running this program.")
+    sys.exit()
 
 def makepath(path):
     if not os.path.exists(os.path.dirname(path)):
