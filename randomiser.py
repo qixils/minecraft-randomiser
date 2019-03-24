@@ -1,17 +1,30 @@
-resourcepack = "pack"
-
-randomisetextures = True
-randomisesounds = True
-randomisetext = True
-randomisefont = True
-randomiseshaders = True
-
 import os
 import shutil
 import random
 import sys
 import json
+import argparse
 
+parser = argparse.ArgumentParser(description='Randomise the assets of a Minecraft resource pack.')
+parser.add_argument('-p', '--pack', default='pack', type=str, dest='pack', help='specifies a resource pack folder')
+parser.add_argument('--notextures', action='store_false', dest='textures', help='disables randomised textures')
+parser.add_argument('--nosounds', action='store_false', dest='sounds', help='disables randomised sounds')
+parser.add_argument('--notexts', action='store_false', dest='texts', help='disables randomised text')
+parser.add_argument('--nofonts', action='store_false', dest='fonts', help='disables randomised fonts')
+parser.add_argument('--noshaders', action='store_false', dest='shaders', help='disables randomised shaders')
+
+args = parser.parse_args()
+resourcepack = args.pack
+randomisetextures = args.textures
+randomisesounds = args.sounds
+randomisetext = args.texts
+randomisefont = args.fonts
+randomiseshaders = args.shaders
+
+if resourcepack == "shuffle":
+    print("The input resource pack may not be named 'shuffle'.")
+if os.path.exists("shuffle/"):
+    print("Please remove the 'shuffle' folder.")
 
 def makepath(path):
     if not os.path.exists(os.path.dirname(path)):
@@ -19,7 +32,6 @@ def makepath(path):
             os.makedirs(os.path.dirname(path))
         except:
             print('tried to create an existing folder')
-
 
 if not (randomisetextures or randomisesounds or randomisetext or randomisefont or randomiseshaders):
     print('Successfully randomised nothing!')
