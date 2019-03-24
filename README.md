@@ -7,7 +7,9 @@ take no credit for creating them.
 
 ## Usage
 
-To use, simply run `randomiser.py`. Options can be viewed using `randomiser.py -h`
+To use, simply run `randomiser.py` in python3. Options can be viewed using `randomiser.py -h`
+
+### Examples
 
 `python3 randomiser.py -h` - Get the program's help and list of options.
 
