@@ -204,7 +204,7 @@ try:
     elif system.startswith('darwin'):
         destfolder = os.path.expanduser(os.path.join('~', 'Library', 'Application Support', 'minecraft', 'resourcepacks', 'shuffle'))
     elif system.startswith('win'):
-        destfolder = os.path.expanduser(os.path.join('%APPDATA%', '.minecraft', 'resourcepacks', 'shuffle'))
+        destfolder = os.path.expandvars(os.path.join('%APPDATA%', '.minecraft', 'resourcepacks', 'shuffle'))
     else:
         destfolder = 'shuffle'
         print('Failed to identify operating system, placing file in current folder instead.')
