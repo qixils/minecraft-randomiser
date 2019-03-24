@@ -1,10 +1,17 @@
 resourcepack = "pack"
 
+randomisetextures = True
+randomisesounds = True
+randomisetext = True
+randomisefont = True
+randomiseshaders = True
+
 import os
 import shutil
 import random
 import sys
 import json
+
 
 def makepath(path):
     if not os.path.exists(os.path.dirname(path)):
@@ -13,6 +20,10 @@ def makepath(path):
         except:
             print('tried to create an existing folder')
 
+
+if not (randomisetextures or randomisesounds or randomisetext or randomisefont or randomiseshaders):
+    print('Successfully randomised nothing!')
+    sys.exit()
 if not os.path.exists(resourcepack):
     makepath(resourcepack)
     print('Unable to locate resource pack folder! Please make sure you have an extracted resource pack in the "'+resourcepack+'" folder.')
@@ -44,127 +55,133 @@ def processimage(imagepath):
 for dirpath, dirs, files in os.walk(resourcepack+"/assets"):
     for file in files:
         fullfilepath = f"{dirpath}/{file}"
-        if file.endswith('.png'):
-            processimage(fullfilepath)
-        elif file.endswith('.ogg'):
+        if file.endswith('.png') and (randomisefont or randomisetextures):
+            if dirpath == resourcepack+"/assets/minecraft/textures/font" and randomisefont:
+                processimage(fullfilepath)
+            if dirpath != resourcepack+"/assets/minecraft/textures/font" and randomisetextures:
+                processimage(fullfilepath)
+        elif file.endswith('.ogg') and randomisesounds:
             sounds.append(fullfilepath)
-        elif dirpath == resourcepack+"/assets/minecraft/lang":
+        elif dirpath == resourcepack+"/assets/minecraft/lang" and randomisetext:
             languages.append(fullfilepath)
-        elif dirpath == resourcepack+"/assets/minecraft/texts":
+        elif dirpath == resourcepack+"/assets/minecraft/texts" and randomisetext:
             specialtexts.append(fullfilepath)
-        elif dirpath == resourcepack+"/assets/minecraft/shaders/program":
+        elif dirpath == resourcepack+"/assets/minecraft/shaders/program" and randomiseshaders:
             shaders[file.split('.')[1]].append(fullfilepath)
 
-print("Randomising textures")
-for res, textures in images.items():
-    shuffled = list(textures)
-    random.shuffle(shuffled)
-    texturenum = 0
-    while texturenum < len(textures):
+if randomisetextures or randomisefont:
+    print("Randomising textures/fonts")
+    for res, textures in images.items():
+        shuffled = list(textures)
+        random.shuffle(shuffled)
+        texturenum = 0
+        while texturenum < len(textures):
 
-        #texture
-        destfile = 'shuffled'+textures[texturenum][4:]
+            #texture
+            destfile = 'shuffled'+textures[texturenum][4:]
+            makepath(destfile)
+            shutil.copyfile(shuffled[texturenum], destfile)
+
+            #mcmeta if it even still exists lol
+            mcmeta = shuffled[texturenum].split('.')[0]+'mcmeta'
+            mcdest = destfile.split('.')[0]+'mcmeta'
+            if os.path.exists(mcmeta):
+                shutil.copyfile(mcmeta, mcdest)
+
+            #model file
+            origmodel = textures[texturenum].split('/')[::-1][0].split('.')[0]+'.json'
+            shufmodel = shuffled[texturenum].split('/')[::-1][0].split('.')[0]+'.json'
+            blockpath = '/assets/minecraft/models/block/'
+            itempath = '/assets/minecraft/models/item/'
+            makepath('shuffled'+blockpath)
+            makepath('shuffled'+itempath)
+            if os.path.exists(resourcepack+blockpath+shufmodel):
+                shutil.copyfile(resourcepack+blockpath+shufmodel, 'shuffled'+blockpath+origmodel)
+            if os.path.exists(resourcepack+itempath+shufmodel):
+                shutil.copyfile(resourcepack+itempath+shufmodel, 'shuffled'+itempath+origmodel)
+
+            #blockstates
+            statedir = '/assets/minecraft/blockstates/'
+            makepath('shuffled'+statedir)
+            if os.path.exists(resourcepack+statedir+shufmodel):
+                shutil.copyfile(resourcepack+statedir+shufmodel,'shuffled'+statedir+origmodel)
+
+            texturenum += 1
+
+if randomisesounds:
+    print("Randomising sounds")
+    shufflesounds = list(sounds)
+    random.shuffle(shufflesounds)
+    soundcount = 0
+    while soundcount < len(sounds):
+        destfile = 'shuffled'+sounds[soundcount][4:]
         makepath(destfile)
-        shutil.copyfile(shuffled[texturenum], destfile)
+        shutil.copyfile(shufflesounds[soundcount], destfile)
+        #print(f"{shufflesounds[soundcount]} -> {destfile}")
+        soundcount += 1
 
-        #mcmeta if it even still exists lol
-        mcmeta = shuffled[texturenum].split('.')[0]+'mcmeta'
-        mcdest = destfile.split('.')[0]+'mcmeta'
-        if os.path.exists(mcmeta):
-            shutil.copyfile(mcmeta, mcdest)
+if randomisetext:
+    print("Randomising text")
+    langvalues = []
 
-        #model file
-        origmodel = textures[texturenum].split('/')[::-1][0].split('.')[0]+'.json'
-        shufmodel = shuffled[texturenum].split('/')[::-1][0].split('.')[0]+'.json'
-        blockpath = '/assets/minecraft/models/block/'
-        itempath = '/assets/minecraft/models/item/'
-        makepath('shuffled'+blockpath)
-        makepath('shuffled'+itempath)
-        if os.path.exists(resourcepack+blockpath+shufmodel):
-            shutil.copyfile(resourcepack+blockpath+shufmodel, 'shuffled'+blockpath+origmodel)
-        if os.path.exists(resourcepack+itempath+shufmodel):
-            shutil.copyfile(resourcepack+itempath+shufmodel, 'shuffled'+itempath+origmodel)
+    for lang in languages:
+        with open(lang) as f:
+            data = json.load(f)
+        langvalues += list(data.values())
 
-        #blockstates
-        statedir = '/assets/minecraft/blockstates/'
-        makepath('shuffled'+statedir)
-        if os.path.exists(resourcepack+statedir+shufmodel):
-            shutil.copyfile(resourcepack+statedir+shufmodel,'shuffled'+statedir+origmodel)
+    for tfile in specialtexts:
+        with open(tfile) as f:
+            content = f.readlines()
+        content = [x.strip() for x in content]
+        langvalues += content
 
-        texturenum += 1
+    for lang in languages:
+        with open(lang) as f:
+            data = json.load(f)
+        shufflelang = {}
+        for key in list(data.keys()):
+            randindex = random.randint(0, len(langvalues)-1)
+            shufflelang[key] = langvalues[randindex]
+            del langvalues[randindex]
+        destpath = 'shuffled'+lang[4:]
+        makepath(destpath)
+        with open(destpath, 'w') as output:
+            json.dump(shufflelang, output)
 
-print("Randomising sounds")
-shufflesounds = list(sounds)
-random.shuffle(shufflesounds)
-soundcount = 0
-while soundcount < len(sounds):
-    destfile = 'shuffled'+sounds[soundcount][4:]
-    makepath(destfile)
-    shutil.copyfile(shufflesounds[soundcount], destfile)
-    #print(f"{shufflesounds[soundcount]} -> {destfile}")
-    soundcount += 1
+    for tfile in specialtexts:
+        with open(tfile) as f:
+            content = f.readlines()
+        linesadded = 0
+        outputlines = []
+        while linesadded < len(content):
+            randindex = random.randint(0, len(langvalues)-1)
+            outputlines.append(langvalues[randindex])
+            del langvalues[randindex]
+            linesadded += 1
+        destpath = 'shuffled'+tfile[4:]
+        makepath(destpath)
+        with open(destpath, 'w') as output:
+            output.write('\n'.join(outputlines))
 
-print("Randomising languages")
-langvalues = []
-
-for lang in languages:
-    with open(lang) as f:
-        data = json.load(f)
-    langvalues += list(data.values())
-
-for tfile in specialtexts:
-    with open(tfile) as f:
-        content = f.readlines()
-    content = [x.strip() for x in content]
-    langvalues += content
-
-for lang in languages:
-    with open(lang) as f:
-        data = json.load(f)
-    shufflelang = {}
-    for key in list(data.keys()):
-        randindex = random.randint(0, len(langvalues)-1)
-        shufflelang[key] = langvalues[randindex]
-        del langvalues[randindex]
-    destpath = 'shuffled'+lang[4:]
-    makepath(destpath)
-    with open(destpath, 'w') as output:
-        json.dump(shufflelang, output)
-
-for tfile in specialtexts:
-    with open(tfile) as f:
-        content = f.readlines()
-    linesadded = 0
-    outputlines = []
-    while linesadded < len(content):
-        randindex = random.randint(0, len(langvalues)-1)
-        outputlines.append(langvalues[randindex])
-        del langvalues[randindex]
-        linesadded += 1
-    destpath = 'shuffled'+tfile[4:]
-    makepath(destpath)
-    with open(destpath, 'w') as output:
-        output.write('\n'.join(outputlines))
-
-print("Randomising shaders")
-for ftype, shaderfiles in shaders.items():
-    shufshad = list(shaderfiles)
-    random.shuffle(shufshad)
-    shadnumber = 0
-    while shadnumber < len(shaderfiles):
-        destfile = 'shuffled'+shaderfiles[shadnumber][4:]
-        makepath(destfile)
-        shutil.copyfile(shufshad[shadnumber], destfile)
-        shadnumber += 1
+if randomiseshaders:
+    print("Randomising shaders")
+    for ftype, shaderfiles in shaders.items():
+        shufshad = list(shaderfiles)
+        random.shuffle(shufshad)
+        shadnumber = 0
+        while shadnumber < len(shaderfiles):
+            destfile = 'shuffled'+shaderfiles[shadnumber][4:]
+            makepath(destfile)
+            shutil.copyfile(shufshad[shadnumber], destfile)
+            shadnumber += 1
 
 print("Creating meta files")
-if not os.path.exists('shuffled/pack.png'):
-    shutil.copyfile(resourcepack+'/pack.png', 'shuffled/pack.png')
+shutil.copyfile(resourcepack+'/pack.png', 'shuffled/pack.png')
 
 with open("shuffled/pack.mcmeta", "w") as descfile:
     descfile.write('{"pack":{"pack_format":4,"description":"Minecraft Shuffled by noahkiq"}}')
 
-print('Installing resource pack folder')
+print('Installing to resource pack folder')
 
 try:
     system = sys.platform.lower()
