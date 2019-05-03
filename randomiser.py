@@ -7,7 +7,10 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Randomise the assets of a Minecraft resource pack.')
 parser.add_argument('-p', '--pack', default='pack', type=str, dest='pack', help='specifies a resource pack folder')
+parser.add_argument('-s', '--seed', default=random.randrange(sys.maxsize), type=int, dest='seed', help='specifies a random seed')
+parser.add_argument('--models', action='store_true', dest='models', help='EXPERIMENTAL: randomised block/item models')
 parser.add_argument('--notextures', action='store_false', dest='textures', help='disables randomised textures')
+parser.add_argument('--noblockstates', action='store_false', dest='blockstates', help='disables randomised block states')
 parser.add_argument('--nosounds', action='store_false', dest='sounds', help='disables randomised sounds')
 parser.add_argument('--notexts', action='store_false', dest='texts', help='disables randomised text')
 parser.add_argument('--nofonts', action='store_false', dest='fonts', help='disables randomised fonts')
@@ -15,17 +18,32 @@ parser.add_argument('--noshaders', action='store_false', dest='shaders', help='d
 
 args = parser.parse_args()
 resourcepack = args.pack
+randomseed = args.seed
 randomisetextures = args.textures
+randomisemodels = args.models
+randomiseblockstates = args.blockstates
 randomisesounds = args.sounds
 randomisetext = args.texts
 randomisefont = args.fonts
 randomiseshaders = args.shaders
 
+random.seed(randomseed)
+
+def print2(toprint, toupdate=False):
+    global longestbar
+    if toupdate:
+        if len(toprint) > longestbar:
+            longestbar = len(toprint)
+        print(toprint.ljust(longestbar, ' '), end='\r', flush=True)
+    else:
+        print(toprint.ljust(longestbar, ' '))
+        longestbar = 0
+
 if resourcepack == "shuffle":
-    print("The input resource pack may not be named 'shuffle'.")
+    print2("The input resource pack may not be named 'shuffle'.")
     sys.exit()
 if os.path.exists("shuffle/"):
-    print("Please remove the 'shuffle' folder before running this program.")
+    print2("Please remove the 'shuffle' folder before running this program.")
     sys.exit()
 
 def makepath(path):
@@ -33,26 +51,31 @@ def makepath(path):
         try:
             os.makedirs(os.path.dirname(path))
         except:
-            print('tried to create an existing folder')
+            print2('tried to create an existing folder')
 
 if not (randomisetextures or randomisesounds or randomisetext or randomisefont or randomiseshaders):
-    print('Successfully randomised nothing!')
+    print2('Successfully randomised nothing!')
     sys.exit()
 if not os.path.exists(resourcepack):
     makepath(resourcepack)
-    print('Unable to locate resource pack folder! Please make sure you have an extracted resource pack in the "'+resourcepack+'" folder.')
+    print2('Unable to locate resource pack folder! Please make sure you have an extracted resource pack in the "'+resourcepack+'" folder.')
     sys.exit()
 if not os.path.exists(resourcepack+'/assets'):
-    print('Unable to locate resource pack folder! Please ensure you have extracted one properly, you should have an "assets" folder in the "'+resourcepack+'" folder.')
+    print2('Unable to locate resource pack folder! Please ensure you have extracted one properly, you should have an "assets" folder in the "'+resourcepack+'" folder.')
     sys.exit()
 
 images = {}
 randimages = {}
+itemmodels = []
+blockmodels = []
+blockstates = []
 sounds = []
 randsounds = []
 languages = []
 specialtexts = []
 shaders = {'vsh': [], 'fsh': [], 'json': []}
+totaltextures = 0
+longestbar = 0
 
 def processimage(imagepath):
     f = open(imagepath,mode='rb')
@@ -72,8 +95,16 @@ for dirpath, dirs, files in os.walk(resourcepack+"/assets"):
         if file.endswith('.png') and (randomisefont or randomisetextures):
             if dirpath == resourcepack+"/assets/minecraft/textures/font" and randomisefont:
                 processimage(fullfilepath)
+                totaltextures += 1
             if dirpath != resourcepack+"/assets/minecraft/textures/font" and randomisetextures:
                 processimage(fullfilepath)
+                totaltextures += 1
+        elif dirpath == resourcepack+"/assets/minecraft/models/item" and randomisemodels:
+            itemmodels.append(fullfilepath)
+        elif dirpath == resourcepack+"/assets/minecraft/models/block" and randomisemodels:
+            blockmodels.append(fullfilepath)
+        elif dirpath == resourcepack+"/assets/minecraft/blockstates" and randomiseblockstates:
+            blockstates.append(fullfilepath)
         elif file.endswith('.ogg') and randomisesounds:
             sounds.append(fullfilepath)
         elif dirpath == resourcepack+"/assets/minecraft/lang" and randomisetext:
@@ -83,16 +114,23 @@ for dirpath, dirs, files in os.walk(resourcepack+"/assets"):
         elif dirpath == resourcepack+"/assets/minecraft/shaders/program" and randomiseshaders:
             shaders[file.split('.')[1]].append(fullfilepath)
 
+print2(f"Random Seed: {randomseed}")
+
 if (randomisetextures or randomisefont) and images != {}:
-    print("Randomising textures/fonts")
+    print2("Randomising textures/fonts", True)
+    processedimages = 0
     for res, textures in images.items():
         shuffled = list(textures)
         random.shuffle(shuffled)
         texturenum = 0
         while texturenum < len(textures):
-
             #texture
             destfile = 'shuffled'+textures[texturenum][4:]
+
+            processedimages += 1
+            progressbar = f"Randomising textures/fonts: {processedimages} of {totaltextures}: {shuffled[texturenum].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
+            print2(progressbar, True)
+
             makepath(destfile)
             shutil.copyfile(shuffled[texturenum], destfile)
 
@@ -103,39 +141,93 @@ if (randomisetextures or randomisefont) and images != {}:
                 shutil.copyfile(mcmeta, mcdest)
 
             #model file
-            origmodel = textures[texturenum].split('/')[::-1][0].split('.')[0]+'.json'
-            shufmodel = shuffled[texturenum].split('/')[::-1][0].split('.')[0]+'.json'
-            blockpath = '/assets/minecraft/models/block/'
-            itempath = '/assets/minecraft/models/item/'
-            makepath('shuffled'+blockpath)
-            makepath('shuffled'+itempath)
-            if os.path.exists(resourcepack+blockpath+shufmodel):
-                shutil.copyfile(resourcepack+blockpath+shufmodel, 'shuffled'+blockpath+origmodel)
-            if os.path.exists(resourcepack+itempath+shufmodel):
-                shutil.copyfile(resourcepack+itempath+shufmodel, 'shuffled'+itempath+origmodel)
+            #origmodel = textures[texturenum].split('/')[::-1][0].split('.')[0]+'.json'
+            #shufmodel = shuffled[texturenum].split('/')[::-1][0].split('.')[0]+'.json'
+            #blockpath = '/assets/minecraft/models/block/'
+            #itempath = '/assets/minecraft/models/item/'
+            #makepath('shuffled'+blockpath)
+            #makepath('shuffled'+itempath)
+            #if os.path.exists(resourcepack+blockpath+shufmodel):
+            #    shutil.copyfile(resourcepack+blockpath+shufmodel, 'shuffled'+blockpath+origmodel)
+            #if os.path.exists(resourcepack+itempath+shufmodel):
+            #    shutil.copyfile(resourcepack+itempath+shufmodel, 'shuffled'+itempath+origmodel)
 
             #blockstates
-            statedir = '/assets/minecraft/blockstates/'
-            makepath('shuffled'+statedir)
-            if os.path.exists(resourcepack+statedir+shufmodel):
-                shutil.copyfile(resourcepack+statedir+shufmodel,'shuffled'+statedir+origmodel)
+            #statedir = '/assets/minecraft/blockstates/'
+            #makepath('shuffled'+statedir)
+            #if os.path.exists(resourcepack+statedir+shufmodel):
+            #    shutil.copyfile(resourcepack+statedir+shufmodel,'shuffled'+statedir+origmodel)
 
             texturenum += 1
+    print2('Randomised textures/fonts')
+
+if randomisemodels and itemmodels != []:
+    print2('Randomising item models', True)
+    randitemmodels = list(itemmodels)
+    random.shuffle(randitemmodels)
+    itemmodelcount = 0
+    while itemmodelcount < len(itemmodels):
+        destfile = 'shuffled'+itemmodels[itemmodelcount][4:]
+
+        progressbar = f"Randomising item models: {itemmodelcount} of {len(itemmodels)}: {itemmodels[itemmodelcount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
+        print2(progressbar, True)
+
+        makepath(destfile)
+        shutil.copyfile(randitemmodels[itemmodelcount], destfile)
+        itemmodelcount += 1
+    print2('Randomised item models')
+
+if randomisemodels and blockmodels != []:
+    print2('Randomising block models', True)
+    randblockmodels = list(blockmodels)
+    random.shuffle(randblockmodels)
+    blockmodelcount = 0
+    while blockmodelcount < len(blockmodels):
+        destfile = 'shuffled'+blockmodels[blockmodelcount][4:]
+
+        progressbar = f"Randomising block models: {blockmodelcount} of {len(blockmodels)}: {blockmodels[blockmodelcount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
+        print2(progressbar, True)
+
+        makepath(destfile)
+        shutil.copyfile(randblockmodels[blockmodelcount], destfile)
+        blockmodelcount += 1
+    print2('Randomised block models')
+
+if randomiseblockstates and blockstates != []:
+    print2('Randomising block states', True)
+    randblockstates = list(blockstates)
+    random.shuffle(randblockstates)
+    blockstatecount = 0
+    while blockstatecount < len(blockstates):
+        destfile = 'shuffled'+blockstates[blockstatecount][4:]
+
+        progressbar = f"Randomising block states: {blockstatecount} of {len(blockstates)}: {blockstates[blockstatecount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
+        print2(progressbar, True)
+
+        makepath(destfile)
+        shutil.copyfile(randblockstates[blockstatecount], destfile)
+        blockstatecount += 1
+    print2('Randomised block states')
 
 if randomisesounds and sounds != []:
-    print("Randomising sounds")
+    print2("Randomising sounds", True)
     shufflesounds = list(sounds)
     random.shuffle(shufflesounds)
     soundcount = 0
     while soundcount < len(sounds):
         destfile = 'shuffled'+sounds[soundcount][4:]
+
+        progressbar = f"Randomising sounds: {soundcount} of {len(sounds)}: {sounds[soundcount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
+        print2(progressbar, True)
+
         makepath(destfile)
         shutil.copyfile(shufflesounds[soundcount], destfile)
-        #print(f"{shufflesounds[soundcount]} -> {destfile}")
+        #print2(f"{shufflesounds[soundcount]} -> {destfile}")
         soundcount += 1
+    print2('Randomised sounds')
 
 if randomisetext and (languages != [] or specialtexts != []):
-    print("Randomising text")
+    print2("Randomising text", True)
     langvalues = []
 
     for lang in languages:
@@ -149,7 +241,13 @@ if randomisetext and (languages != [] or specialtexts != []):
         content = [x.strip() for x in content]
         langvalues += content
 
+    processedlangs = 0
+    totallangs = len(languages) + len(specialtexts)
     for lang in languages:
+        processedlangs += 1
+        progressbar = f"Randomising text: {processedlangs} of {totallangs}: {lang.split('/')[::-1][0]}"
+        print2(progressbar, True)
+
         with open(lang) as f:
             data = json.load(f)
         shufflelang = {}
@@ -163,6 +261,10 @@ if randomisetext and (languages != [] or specialtexts != []):
             json.dump(shufflelang, output)
 
     for tfile in specialtexts:
+        processedlangs += 1
+        progressbar = f"Randomising text: {processedlangs} of {totallangs}: {lang.split('/')[::-1][0]}"
+        print2(progressbar, True)
+
         with open(tfile) as f:
             content = f.readlines()
         linesadded = 0
@@ -177,8 +279,10 @@ if randomisetext and (languages != [] or specialtexts != []):
         with open(destpath, 'w') as output:
             output.write('\n'.join(outputlines))
 
+    print2("Randomised text")
+
 if randomiseshaders and shaders != {'vsh': [], 'fsh': [], 'json': []}:
-    print("Randomising shaders")
+    print2("Randomising shaders", True)
     for ftype, shaderfiles in shaders.items():
         shufshad = list(shaderfiles)
         random.shuffle(shufshad)
@@ -189,15 +293,15 @@ if randomiseshaders and shaders != {'vsh': [], 'fsh': [], 'json': []}:
             shutil.copyfile(shufshad[shadnumber], destfile)
             shadnumber += 1
 
-print("Creating meta files")
+print2("Creating meta files")
 if os.path.exists(resourcepack+'/pack.png'):
-    shutil.copyfile(resourcepack+'/pack.png', 'shuffled/pack.png')
+    shutil.copyfile(random.choice(images["16x16"]), 'shuffled/pack.png')
 
 makepath('shuffled/pack.mcmeta')
 with open("shuffled/pack.mcmeta", "w") as descfile:
     descfile.write('{"pack":{"pack_format":4,"description":"Minecraft Shuffled by noellekiq"}}')
 
-print('Installing to resource pack folder')
+print2('Installing to resource pack folder')
 
 try:
     system = sys.platform.lower()
@@ -209,9 +313,9 @@ try:
         destfolder = os.path.expandvars(os.path.join('%APPDATA%', '.minecraft', 'resourcepacks', 'shuffle'))
     else:
         destfolder = 'shuffle'
-        print('Failed to identify operating system, placing file in current folder instead.')
+        print2('Failed to identify operating system, placing file in current folder instead.')
     shutil.make_archive(destfolder, 'zip', 'shuffled')
-    print('Resource pack installed!')
+    print2('Resource pack installed!')
     shutil.rmtree('shuffled')
 except:
-    print('Compression failed! Please manually move the "shuffled" folder to your resource pack folder.')
+    print2('Compression failed! Please manually move the "shuffled" folder to your resource pack folder.')
