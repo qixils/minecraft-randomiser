@@ -2,6 +2,8 @@
 
 This program randomises every single image, sound, shader, and language file of a resource pack and automatically installs it into your resource pack folder.
 
+This has been confirmed to work on Minecraft 1.13.2 & 1.14, and likely works on other versions aswell due to its safe way of randomizing files.
+
 The default Minecraft resource pack is included by default. The images, sounds, and other files included in said resource pack are owned and created by Mojang AB and I
 take no credit for creating them.
 
