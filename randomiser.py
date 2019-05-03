@@ -195,7 +195,7 @@ if os.path.exists(resourcepack+'/pack.png'):
 
 makepath('shuffled/pack.mcmeta')
 with open("shuffled/pack.mcmeta", "w") as descfile:
-    descfile.write('{"pack":{"pack_format":4,"description":"Minecraft Shuffled by noahkiq"}}')
+    descfile.write('{"pack":{"pack_format":4,"description":"Minecraft Shuffled by noellekiq"}}')
 
 print('Installing to resource pack folder')
 
