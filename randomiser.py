@@ -40,10 +40,12 @@ def print2(toprint, toupdate=False):
         longestbar = 0
 
 if resourcepack == "shuffle":
-    print2("The input resource pack may not be named 'shuffle'.")
+    print("The input resource pack may not be named 'shuffle'.")
+    input('Press any key to exit.')
     sys.exit()
 if os.path.exists("shuffle/"):
-    print2("Please remove the 'shuffle' folder before running this program.")
+    print("Please remove the 'shuffle' folder before running this program.")
+    input('Press any key to exit.')
     sys.exit()
 
 def makepath(path):
@@ -51,17 +53,19 @@ def makepath(path):
         try:
             os.makedirs(os.path.dirname(path))
         except:
-            print2('tried to create an existing folder')
+            print('DEBUG: tried to create an existing folder')
 
 if not (randomisetextures or randomisesounds or randomisetext or randomisefont or randomiseshaders):
-    print2('Successfully randomised nothing!')
+    print('Successfully randomised nothing!')
     sys.exit()
 if not os.path.exists(resourcepack):
     makepath(resourcepack)
-    print2('Unable to locate resource pack folder! Please make sure you have an extracted resource pack in the "'+resourcepack+'" folder.')
+    print('Unable to locate resource pack folder! Please make sure you have an extracted resource pack in the "'+resourcepack+'" folder.')
+    input('Press any key to exit.')
     sys.exit()
 if not os.path.exists(resourcepack+'/assets'):
-    print2('Unable to locate resource pack folder! Please ensure you have extracted one properly, you should have an "assets" folder in the "'+resourcepack+'" folder.')
+    print('Unable to locate resource pack folder! Please ensure you have extracted one properly, you should have an "assets" folder in the "'+resourcepack+'" folder.')
+    input('Press any key to exit.')
     sys.exit()
 
 images = {}
