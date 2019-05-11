@@ -302,8 +302,10 @@ if randomiseshaders and shaders != {'vsh': [], 'fsh': [], 'json': []}:
             shadnumber += 1
 
 print2("Creating meta files")
-if os.path.exists(resourcepack+'/pack.png'):
+if "16x16" in images.keys():
     shutil.copyfile(random.choice(images["16x16"]), 'shuffled/pack.png')
+elif os.path.exists(resourcepack+'/pack.png'):
+    shutil.copyfile(resourcepack+'/pack.png', 'shuffled/pack.png')
 
 makepath('shuffled/pack.mcmeta')
 with open("shuffled/pack.mcmeta", "w") as descfile:
