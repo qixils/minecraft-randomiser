@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser(description='Randomise the assets of a Minecraf
 parser.add_argument('-p', '--pack', default='pack', type=str, dest='pack', help='specifies a resource pack folder')
 parser.add_argument('-s', '--seed', default=random.randrange(sys.maxsize), type=int, dest='seed', help='specifies a random seed')
 parser.add_argument('--models', action='store_true', dest='models', help='EXPERIMENTAL: randomised block/item models')
+#parser.add_argument('--noanimations', action='store_false', dest='animations', help='disables animations, fixes some missing textures')
 parser.add_argument('--notextures', action='store_false', dest='textures', help='disables randomised textures')
 parser.add_argument('--noblockstates', action='store_false', dest='blockstates', help='disables randomised block states')
 parser.add_argument('--nosounds', action='store_false', dest='sounds', help='disables randomised sounds')
@@ -21,6 +22,7 @@ resourcepack = args.pack
 randomseed = args.seed
 randomisetextures = args.textures
 randomisemodels = args.models
+#randomiseanimations = args.animations
 randomiseblockstates = args.blockstates
 randomisesounds = args.sounds
 randomisetext = args.texts
@@ -82,6 +84,8 @@ totaltextures = 0
 longestbar = 0
 
 def processimage(imagepath):
+    #print(imagepath.replace('.png', '.mcmeta'))
+    #if randomiseanimations or os.path.exists()
     f = open(imagepath,mode='rb')
     header = f.read(26)
     f.close()
@@ -139,8 +143,8 @@ if (randomisetextures or randomisefont) and images != {}:
             shutil.copyfile(shuffled[texturenum], destfile)
 
             #mcmeta if it even still exists lol
-            mcmeta = shuffled[texturenum].split('.')[0]+'mcmeta'
-            mcdest = destfile.split('.')[0]+'mcmeta'
+            mcmeta = shuffled[texturenum]+'.mcmeta'
+            mcdest = destfile+'.mcmeta'
             if os.path.exists(mcmeta):
                 shutil.copyfile(mcmeta, mcdest)
 
