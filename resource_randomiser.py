@@ -123,27 +123,23 @@ for dirpath, dirs, files in os.walk(resourcepack+"/assets"):
             shaders[file.split('.')[1]].append(fullfilepath)
 
 print2(f"Random Seed: {randomseed}")
+def shuffler(randoBool, toRando, inputType):
+    if randoBool and toRando != []:
+        print2("Randomising "+inputType, True)
+        shufflelist = list(toRando)
+        random.shuffle(shufflelist)
+        filecount = 0
+        while filecount < len(toRando):
+            destfile = f'shuffled/data/minecraft/'+'/'.join(toRando[filecount].split('/')[1:])
 
-if (randomisetextures or randomisefont) and images != {}:
-    print2("Randomising textures/fonts", True)
-    processedimages = 0
-    for res, textures in images.items():
-        shuffled = list(textures)
-        random.shuffle(shuffled)
-        texturenum = 0
-        while texturenum < len(textures):
-            #texture
-            destfile = 'shuffled'+textures[texturenum][4:]
-
-            processedimages += 1
-            progressbar = f"Randomising textures/fonts: {processedimages} of {totaltextures}: {shuffled[texturenum].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
+            progressbar = f"Randomising {inputType}: {filecount} of {len(toRando)}: {toRando[filecount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
             print2(progressbar, True)
 
             makepath(destfile)
-            shutil.copyfile(shuffled[texturenum], destfile)
+            shutil.copyfile(shufflelist[filecount], destfile)
 
-            #mcmeta if it even still exists lol
-            mcmeta = shuffled[texturenum]+'.mcmeta'
+            #for textures
+            mcmeta = shufflelist[filecount]+'.mcmeta'
             mcdest = destfile+'.mcmeta'
             if os.path.exists(mcmeta):
                 shutil.copyfile(mcmeta, mcdest)
@@ -166,73 +162,18 @@ if (randomisetextures or randomisefont) and images != {}:
             #if os.path.exists(resourcepack+statedir+shufmodel):
             #    shutil.copyfile(resourcepack+statedir+shufmodel,'shuffled'+statedir+origmodel)
 
-            texturenum += 1
-    print2('Randomised textures/fonts')
+            filecount += 1
+        print2('Randomised '+inputType)
 
-if randomisemodels and itemmodels != []:
-    print2('Randomising item models', True)
-    randitemmodels = list(itemmodels)
-    random.shuffle(randitemmodels)
-    itemmodelcount = 0
-    while itemmodelcount < len(itemmodels):
-        destfile = 'shuffled'+itemmodels[itemmodelcount][4:]
-
-        progressbar = f"Randomising item models: {itemmodelcount} of {len(itemmodels)}: {itemmodels[itemmodelcount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
-        print2(progressbar, True)
-
-        makepath(destfile)
-        shutil.copyfile(randitemmodels[itemmodelcount], destfile)
-        itemmodelcount += 1
-    print2('Randomised item models')
-
-if randomisemodels and blockmodels != []:
-    print2('Randomising block models', True)
-    randblockmodels = list(blockmodels)
-    random.shuffle(randblockmodels)
-    blockmodelcount = 0
-    while blockmodelcount < len(blockmodels):
-        destfile = 'shuffled'+blockmodels[blockmodelcount][4:]
-
-        progressbar = f"Randomising block models: {blockmodelcount} of {len(blockmodels)}: {blockmodels[blockmodelcount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
-        print2(progressbar, True)
-
-        makepath(destfile)
-        shutil.copyfile(randblockmodels[blockmodelcount], destfile)
-        blockmodelcount += 1
-    print2('Randomised block models')
-
-if randomiseblockstates and blockstates != []:
-    print2('Randomising block states', True)
-    randblockstates = list(blockstates)
-    random.shuffle(randblockstates)
-    blockstatecount = 0
-    while blockstatecount < len(blockstates):
-        destfile = 'shuffled'+blockstates[blockstatecount][4:]
-
-        progressbar = f"Randomising block states: {blockstatecount} of {len(blockstates)}: {blockstates[blockstatecount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
-        print2(progressbar, True)
-
-        makepath(destfile)
-        shutil.copyfile(randblockstates[blockstatecount], destfile)
-        blockstatecount += 1
-    print2('Randomised block states')
-
-if randomisesounds and sounds != []:
-    print2("Randomising sounds", True)
-    shufflesounds = list(sounds)
-    random.shuffle(shufflesounds)
-    soundcount = 0
-    while soundcount < len(sounds):
-        destfile = 'shuffled'+sounds[soundcount][4:]
-
-        progressbar = f"Randomising sounds: {soundcount} of {len(sounds)}: {sounds[soundcount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
-        print2(progressbar, True)
-
-        makepath(destfile)
-        shutil.copyfile(shufflesounds[soundcount], destfile)
-        #print2(f"{shufflesounds[soundcount]} -> {destfile}")
-        soundcount += 1
-    print2('Randomised sounds')
+randoimagery = randomisetextures or randomisefont
+for resolution, imagefiles in images.items():
+    shuffler(randoimagery, imagefiles, f"textures ({resolution})")
+shuffler(randomisemodels, itemmodels, "item models")  # can reduce more repeat code with a dict (ie unused tags code in data randomiser)
+shuffler(randomisemodels, blockmodels, "block models")
+shuffler(randomiseblockstates, blockstates, "block states")
+shuffler(randomisesounds, sounds, "sounds")
+for key, value in shaders.items():
+    shuffler(randomiseshaders, value, f"shaders ({key})")
 
 if randomisetext and (languages != [] or specialtexts != []):
     print2("Randomising text", True)
@@ -288,18 +229,6 @@ if randomisetext and (languages != [] or specialtexts != []):
             output.write('\n'.join(outputlines))
 
     print2("Randomised text")
-
-if randomiseshaders and shaders != {'vsh': [], 'fsh': [], 'json': []}:
-    print2("Randomising shaders", True)
-    for ftype, shaderfiles in shaders.items():
-        shufshad = list(shaderfiles)
-        random.shuffle(shufshad)
-        shadnumber = 0
-        while shadnumber < len(shaderfiles):
-            destfile = 'shuffled'+shaderfiles[shadnumber][4:]
-            makepath(destfile)
-            shutil.copyfile(shufshad[shadnumber], destfile)
-            shadnumber += 1
 
 print2("Creating meta files")
 if "16x16" in images.keys():
