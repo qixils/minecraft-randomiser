@@ -87,6 +87,7 @@
     "mco.configure.world.slot.empty": "Tu\u0161\u010dia",
     "mco.configure.world.slot.switch.question.line1": "J\u016bs\u0173 realm bus perjungta \u012f kit\u0105 pasaul\u012f",
     "mco.configure.world.slot.switch.question.line2": "Ar tikrai norite t\u0119sti?",
+    "mco.configure.world.slot.tooltip": "Perjungti \u012f pasaul\u012f",
     "mco.configure.world.slot.tooltip.active": "Prisijungti",
     "mco.configure.world.slot.tooltip.minigame": "Perjungti \u012f \u201eMini\u201c \u017eaidim\u0105",
     "mco.configure.world.spawnAnimals": "Generuoti gyv\u016bnus",

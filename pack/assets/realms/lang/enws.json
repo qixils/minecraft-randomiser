@@ -1,5 +1,6 @@
 {
     "mco.account.privacy.info": "Read thou the Mojang informations and privacy laws",
+    "mco.account.privacyinfo": "Mojang implements c'rtain procedures to holp protecteth children and their privacy enwheeling complying with the children\u2019s online privacy protection act (COPPA) and gen'ral data protection regulation (GDPR). \n \nThee may needeth to obtaineth parental consent bef're accessing thy Realms account. \n \nIf 't be true thee has't an fusty'r minecraft account (you logeth in with thy us'rname), thee needeth to migrate the account to a Mojang account in 'rd'r to access Realms.",
     "mco.account.update": "Agree forth",
     "mco.activity.noactivity": "For %s days, the slumber hath been unbroken",
     "mco.activity.title": "Player acts",
@@ -198,7 +199,9 @@
     "mco.selectServer.popup": "May it please you, Realms art a simple theatre to vouchsafe hither a party of ten for safe play. Ye mayst journey lands wide, and make merry games within. Verily, only thou shall purchase a service.",
     "mco.selectServer.trial": "Acquire a trial!",
     "mco.selectServer.uninitialized": "Click to open thine new realm!",
+    "mco.template.button.publisher": "Publish'r",
     "mco.template.button.select": "Choose",
+    "mco.template.button.trailer": "Trail'r",
     "mco.template.default.name": "Furnish'd world",
     "mco.template.info.tooltip": "Publish'd site",
     "mco.template.name": "Furnish'd",
