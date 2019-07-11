@@ -7,15 +7,15 @@ import argparse
 import collections
 import collections.abc
 
-parser = argparse.ArgumentParser(description='Randomise the data of a Minecraft data folder.')
+parser = argparse.ArgumentParser(description='Randomise the data of a Minecraft datapack folder.')
 parser.add_argument('-f', '--folder', default='data', type=str, dest='data', help='specifies the data folder')
 parser.add_argument('-s', '--seed', default=random.randrange(sys.maxsize), type=int, dest='seed', help='specifies a random seed')
 parser.add_argument('--noadvancements', action='store_false', dest='advancements', help='disables randomised advancements')
 parser.add_argument('--noloottables', action='store_false', dest='loottables', help='disables randomised loot tables')
-parser.add_argument('--preservechances', action='store_false', dest='lootchances', help='[loot] preserves normal loot chances instead of 100% chance')
+parser.add_argument('--preservechances', action='store_false', dest='lootchances', help='[loot] preserves normal loot chances instead of guranteed chance')
 parser.add_argument('--norecipes', action='store_false', dest='recipes', help='disables randomised recipes')
-parser.add_argument('--nostructures', action='store_false', dest='structures', help='disables randomised structures')
 parser.add_argument('--notags', action='store_false', dest='tags', help='disables randomised tags')
+parser.add_argument('--structures', action='store_true', dest='structures', help='enables randomised structures (may crash)')
 
 args = parser.parse_args()
 datafolder = args.data
