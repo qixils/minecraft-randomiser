@@ -8,14 +8,15 @@ import argparse
 parser = argparse.ArgumentParser(description='Randomise the assets of a Minecraft resource pack.')
 parser.add_argument('-p', '--pack', default='pack', type=str, dest='pack', help='specifies a resource pack folder')
 parser.add_argument('-s', '--seed', default=random.randrange(sys.maxsize), type=int, dest='seed', help='specifies a random seed')
-parser.add_argument('--models', action='store_true', dest='models', help='EXPERIMENTAL: randomised block/item models')
 #parser.add_argument('--noanimations', action='store_false', dest='animations', help='disables animations, fixes some missing textures')
+parser.add_argument('--alttextures', action='store_true', dest='alttextures', help='alternative texture randomization, only swaps blocks with other blocks, items with items, etc. supports animated textures')
 parser.add_argument('--notextures', action='store_false', dest='textures', help='disables randomised textures')
 parser.add_argument('--noblockstates', action='store_false', dest='blockstates', help='disables randomised block states')
 parser.add_argument('--nosounds', action='store_false', dest='sounds', help='disables randomised sounds')
 parser.add_argument('--notexts', action='store_false', dest='texts', help='disables randomised text')
 parser.add_argument('--nofonts', action='store_false', dest='fonts', help='disables randomised fonts')
 parser.add_argument('--noshaders', action='store_false', dest='shaders', help='disables randomised shaders')
+parser.add_argument('--models', action='store_true', dest='models', help='EXPERIMENTAL: randomised block/item models')
 
 args = parser.parse_args()
 resourcepack = args.pack
@@ -28,6 +29,7 @@ randomisesounds = args.sounds
 randomisetext = args.texts
 randomisefont = args.fonts
 randomiseshaders = args.shaders
+alttextures = args.alttextures
 
 random.seed(randomseed)
 
@@ -57,7 +59,7 @@ def makepath(path):
         except:
             print('DEBUG: tried to create an existing folder')
 
-if not (randomisetextures or randomisesounds or randomisetext or randomisefont or randomiseshaders):
+if not (randomisetextures or randomisemodels or randomiseblockstates or randomisesounds or randomisetext or randomisefont or randomiseshaders):
     print('Successfully randomised nothing!')
     sys.exit()
 if not os.path.exists(resourcepack):
@@ -86,15 +88,21 @@ longestbar = 0
 def processimage(imagepath):
     #print(imagepath.replace('.png', '.mcmeta'))
     #if randomiseanimations or os.path.exists()
-    f = open(imagepath,mode='rb')
-    header = f.read(26)
-    f.close()
-    width = int.from_bytes(header[16:20],'big',signed=False)
-    height = int.from_bytes(header[20:24],'big',signed=False)
-    dictkey = f"{width}x{height}"
-    if dictkey not in images:
-        images[dictkey] = []
-    images[dictkey].append(imagepath)
+    if not alttextures:
+        f = open(imagepath,mode='rb')
+        header = f.read(26)
+        f.close()
+        width = int.from_bytes(header[16:20],'big',signed=False)
+        height = int.from_bytes(header[20:24],'big',signed=False)
+        dictkey = f"{width}x{height}"
+        if dictkey not in images:
+            images[dictkey] = []
+        images[dictkey].append(imagepath)
+    else:
+        texturetype = imagepath.split('/')[4]
+        if texturetype not in images:
+            images[texturetype] = []
+        images[texturetype].append(imagepath)
 
 #find the files to swap
 for dirpath, dirs, files in os.walk(resourcepack+"/assets"):
@@ -130,9 +138,9 @@ def shuffler(randoBool, toRando, inputType):
         random.shuffle(shufflelist)
         filecount = 0
         while filecount < len(toRando):
-            destfile = f'shuffled/data/minecraft/'+'/'.join(toRando[filecount].split('/')[1:])
+            destfile = f'shuffled/'+'/'.join(toRando[filecount].split('/')[1:])
 
-            progressbar = f"Randomising {inputType}: {filecount} of {len(toRando)}: {toRando[filecount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
+            progressbar = f"Randomising {inputType}: {filecount+1} of {len(toRando)}: {shufflelist[filecount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
             print2(progressbar, True)
 
             makepath(destfile)
