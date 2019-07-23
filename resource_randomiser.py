@@ -188,12 +188,12 @@ if randomisetext and (languages != [] or specialtexts != []):
     langvalues = []
 
     for lang in languages:
-        with open(lang) as f:
+        with open(lang, encoding='utf-8') as f:
             data = json.load(f)
         langvalues += list(data.values())
 
     for tfile in specialtexts:
-        with open(tfile) as f:
+        with open(tfile, encoding='utf-8') as f:
             content = f.readlines()
         content = [x.strip() for x in content]
         langvalues += content
@@ -205,7 +205,7 @@ if randomisetext and (languages != [] or specialtexts != []):
         progressbar = f"Randomising text: {processedlangs} of {totallangs}: {lang.split('/')[::-1][0]}"
         print2(progressbar, True)
 
-        with open(lang) as f:
+        with open(lang, encoding='utf-8') as f:
             data = json.load(f)
         shufflelang = {}
         for key in list(data.keys()):
@@ -214,7 +214,7 @@ if randomisetext and (languages != [] or specialtexts != []):
             del langvalues[randindex]
         destpath = 'shuffled'+lang[4:]
         makepath(destpath)
-        with open(destpath, 'w') as output:
+        with open(destpath, 'w', encoding='utf-8') as output:
             json.dump(shufflelang, output)
 
     for tfile in specialtexts:
@@ -222,7 +222,7 @@ if randomisetext and (languages != [] or specialtexts != []):
         progressbar = f"Randomising text: {processedlangs} of {totallangs}: {lang.split('/')[::-1][0]}"
         print2(progressbar, True)
 
-        with open(tfile) as f:
+        with open(tfile, encoding='utf-8') as f:
             content = f.readlines()
         linesadded = 0
         outputlines = []
@@ -233,7 +233,7 @@ if randomisetext and (languages != [] or specialtexts != []):
             linesadded += 1
         destpath = 'shuffled'+tfile[4:]
         makepath(destpath)
-        with open(destpath, 'w') as output:
+        with open(destpath, 'w', encoding='utf-8') as output:
             output.write('\n'.join(outputlines))
 
     print2("Randomised text")
