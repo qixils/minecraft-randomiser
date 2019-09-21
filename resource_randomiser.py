@@ -246,10 +246,10 @@ print2("Creating meta files")
 if "16x16" in images.keys():
     shutil.copyfile(random.choice(images["16x16"]), os.path.join('shuffled','pack.png'))
 elif os.path.exists(os.path.join(resourcepack,'pack.png')):
-    shutil.copyfile(os.path.join(resourcepack,'pack.png'), os.path.join(shuffled,'pack.png'))
+    shutil.copyfile(os.path.join(resourcepack,'pack.png'), os.path.join('shuffled','pack.png'))
 
-makepath(os.path.join(shuffled,'pack.mcmeta'))
-with open(os.path.join(shuffled,'pack.mcmeta'), "w") as descfile:
+makepath(os.path.join('shuffled','pack.mcmeta'))
+with open(os.path.join('shuffled','pack.mcmeta'), "w") as descfile:
     descfile.write('{"pack":{"pack_format":4,"description":"Minecraft Shuffled by lexikiq"}}')
 
 print2('Installing to resource pack folder')

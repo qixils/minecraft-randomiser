@@ -44,7 +44,7 @@ if datafolder == "shuffle":
     print("The input data folder may not be named 'shuffle'.")
     input('Press any key to exit.')
     sys.exit()
-if os.path.exists("shuffle/"):
+if os.path.exists("shuffle"):
     print("Please remove the 'shuffle' folder before running this program.")
     input('Press any key to exit.')
     sys.exit()
@@ -82,8 +82,9 @@ tags = {'blocks': [], 'entity_types': [], 'fluids': [], 'items': []}
 #find the files to swap
 for dirpath, dirs, files in os.walk(datafolder):
     for file in files:
-        fullfilepath = f"{dirpath}/{file}"
-        if dirpath.startswith(datafolder+"/advancements/") and randomiseadvancements:
+        fullfilepath = os.path.join(dirpath,file)
+
+        if dirpath.startswith(os.path.join(datafolder,'advancements')) and randomiseadvancements:
             with open(fullfilepath, 'r') as advfile:
                 advdata = json.loads(advfile.read())
                 thisshallpass = True
@@ -102,11 +103,11 @@ for dirpath, dirs, files in os.walk(datafolder):
                     else:
                         advancements['rewards'].append({})
                     advancements['criteria_count'].append(len(advdata['criteria']))
-        elif dirpath.startswith(datafolder+"/loot_table") and randomiseloottables:
+        elif dirpath.startswith(os.path.join(datafolder,'loot_tables')) and randomiseloottables:
             loottables.append(fullfilepath)
-        elif dirpath == datafolder+"/recipes" and randomiserecipes:
+        elif dirpath == os.path.join(datafolder,"recipes") and randomiserecipes:
             recipes.append(fullfilepath)
-        elif dirpath.startswith(datafolder+"/structures") and randomisestructures:
+        elif dirpath.startswith(os.path.join(datafolder,"structures")) and randomisestructures:
             structures.append(fullfilepath)
         # unstable, would need to work out how to avoid looping back on itself somehow
         # elif dirpath.startswith(datafolder+"/tags") and randomisetags:
@@ -120,9 +121,11 @@ def shuffler(randoBool, toRando, inputType):
         random.shuffle(shufflelist)
         filecount = 0
         while filecount < len(toRando):
-            destfile = f'shuffled/data/minecraft/'+'/'.join(toRando[filecount].split('/')[1:])
+            destfile = os.path.join('shuffled','data','minecraft')
+            for newpath in toRando[filecount].split(os.path.sep)[1:]:
+                destfile = os.path.join(destfile,newpath)
 
-            progressbar = f"Randomising {inputType}: {filecount} of {len(toRando)}: {toRando[filecount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
+            progressbar = f"Randomising {inputType}: {filecount} of {len(toRando)}: {toRando[filecount].split(os.path.sep)[::-1][0]} -> {destfile.split(os.path.sep)[::-1][0]}"
             print2(progressbar, True)
 
             makepath(destfile)
@@ -173,7 +176,9 @@ if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteri
     print2("Randomising advancements", True)
     random.shuffle(advlist)
     for advorigfile in advlist:
-        destfile = f'shuffled/data/minecraft/'+'/'.join(advorigfile.split('/')[1:])
+        destfile = os.path.join('shuffled','data','minecraft')
+        for newpath in advorigfile.split(os.path.sep)[1:]:
+            destfile = os.path.join(destfile,newpath)
         with open(advorigfile, 'r') as destadv:
             advjson = json.loads(destadv.read())
             advjson['display']['show_toast'] = True
@@ -270,18 +275,19 @@ shuffler(randomisestructures, structures, "structures")
 
 print('Writing meta files')
 
-makepath('shuffled/pack.mcmeta')
-with open("shuffled/pack.mcmeta", "w") as descfile:
+makepath(os.path.join('shuffled','pack.mcmeta'))
+with open(os.path.join('shuffled','pack.mcmeta'), "w") as descfile:
     descfile.write('{"pack":{"pack_format": 1,"description": "MC Data Randomizer, Seed: '+str(randomseed)+'"}}')
 
-initfilepath = f"shuffled/data/random_data_{randomseed}/functions/reset.mcfunction"
+initfilepath = os.path.join('shuffled','data',f'random_data_{randomseed}','functions','reset.mcfunction')
 makepath(initfilepath)
 with open(initfilepath, "w") as initfile:
-    initfile.write('tellraw @a ["",{"text":"Data file randomiser by noellekiq / Seed '+str(randomseed)+'","color":"green"}]')
-    #initfile.write('tellraw @a ["",{"text":"Data file randomiser by noellekiq","color":"green"}]')
+    initfile.write('tellraw @a ["",{"text":"Data file randomiser by lexikiq / Seed '+str(randomseed)+'","color":"green"}]')
+    #initfile.write('tellraw @a ["",{"text":"Data file randomiser by lexikiq","color":"green"}]')
 
-makepath("shuffled/data/minecraft/tags/functions/load.json")
-with open("shuffled/data/minecraft/tags/functions/load.json", "w") as loadfile:
+loadjspath = os.path.join('shuffled','data','minecraft','tags','functions','load.json')
+makepath(loadjspath)
+with open(loadjspath, "w") as loadfile:
     loadfile.write('{"values": ["random_data_'+str(randomseed)+':reset"]}')
 
 print('Compressing')
@@ -289,14 +295,13 @@ print('Compressing')
 try:
     system = sys.platform.lower()
     if system.startswith('linux'):
-        destfolder = "~/.minecraft/saves/WORLD_HERE/datapacks"
+        destfolder = os.path.expanduser(os.path.join('~','.minecraft','saves','WORLD_HERE','datapacks'))
     elif system.startswith('darwin'):
-        destfolder = "~/Library/Application Support/minecraft/saves/WORLD_HERE/datapacks"
+        destfolder = os.path.expanduser(os.path.join('~','Library','Application Support','minecraft','saves','WORLD_HERE','datapacks'))
     elif system.startswith('win'):
-        destfolder = "%APPDATA%\\.minecraft\\saves\\WORLD_HERE\\datapacks"
+        destfolder = os.path.join('%APPDATA%','.minecraft','saves','WORLD_HERE','datapacks')
     else:
-        destfolder = ''
-        print('Failed to identify operating system, placing file in current folder instead.')
+        destfolder = '*failed to identify OS*'
     printmsg = "File output at random_data.zip! Please copy over to your world's 'datapacks' folder"
     if destfolder != '':
         printmsg += f" ({destfolder})"
