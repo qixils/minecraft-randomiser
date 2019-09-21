@@ -47,7 +47,7 @@ if resourcepack == "shuffle":
     print("The input resource pack may not be named 'shuffle'.")
     input('Press any key to exit.')
     sys.exit()
-if os.path.exists("shuffle/"):
+if os.path.exists(os.path.join('shuffle')):
     print("Please remove the 'shuffle' folder before running this program.")
     input('Press any key to exit.')
     sys.exit()
@@ -67,7 +67,7 @@ if not os.path.exists(resourcepack):
     print('Unable to locate resource pack folder! Please make sure you have an extracted resource pack in the "'+resourcepack+'" folder.')
     input('Press any key to exit.')
     sys.exit()
-if not os.path.exists(resourcepack+'/assets'):
+if not os.path.exists(os.path.join(resourcepack, 'assets')):
     print('Unable to locate resource pack folder! Please ensure you have extracted one properly, you should have an "assets" folder in the "'+resourcepack+'" folder.')
     input('Press any key to exit.')
     sys.exit()
@@ -99,35 +99,37 @@ def processimage(imagepath):
             images[dictkey] = []
         images[dictkey].append(imagepath)
     else:
-        texturetype = imagepath.split('/')[4]
+        texturetype = imagepath.split(os.path.sep)[4]
         if texturetype not in images:
             images[texturetype] = []
         images[texturetype].append(imagepath)
 
 #find the files to swap
-for dirpath, dirs, files in os.walk(resourcepack+"/assets"):
+for dirpath, dirs, files in os.walk(os.path.join(resourcepack,"assets")):
     for file in files:
-        fullfilepath = f"{dirpath}/{file}"
+        fullfilepath = os.path.join(dirpath,file)
+        mcraft = os.path.join(resourcepack,'assets','minecraft')
+
         if file.endswith('.png') and (randomisefont or randomisetextures):
-            if dirpath == resourcepack+"/assets/minecraft/textures/font" and randomisefont:
+            if dirpath == os.path.join(mcraft,'textures','font') and randomisefont:
                 processimage(fullfilepath)
                 totaltextures += 1
-            if dirpath != resourcepack+"/assets/minecraft/textures/font" and randomisetextures:
+            if dirpath != os.path.join(mcraft,'textures','font') and randomisetextures:
                 processimage(fullfilepath)
                 totaltextures += 1
-        elif dirpath == resourcepack+"/assets/minecraft/models/item" and randomisemodels:
+        elif dirpath == os.path.join(mcraft,'models','item') and randomisemodels:
             itemmodels.append(fullfilepath)
-        elif dirpath == resourcepack+"/assets/minecraft/models/block" and randomisemodels:
+        elif dirpath == os.path.join(mcraft,'models','block') and randomisemodels:
             blockmodels.append(fullfilepath)
-        elif dirpath == resourcepack+"/assets/minecraft/blockstates" and randomiseblockstates:
+        elif dirpath == os.path.join(mcraft,'blockstates') and randomiseblockstates:
             blockstates.append(fullfilepath)
         elif file.endswith('.ogg') and randomisesounds:
             sounds.append(fullfilepath)
-        elif dirpath == resourcepack+"/assets/minecraft/lang" and randomisetext:
+        elif dirpath == os.path.join(mcraft,'lang') and randomisetext:
             languages.append(fullfilepath)
-        elif dirpath == resourcepack+"/assets/minecraft/texts" and randomisetext:
+        elif dirpath == os.path.join(mcraft,'texts') and randomisetext:
             specialtexts.append(fullfilepath)
-        elif dirpath == resourcepack+"/assets/minecraft/shaders/program" and randomiseshaders:
+        elif dirpath == os.path.join(mcraft,'shaders','program') and randomiseshaders:
             shaders[file.split('.')[1]].append(fullfilepath)
 
 print2(f"Random Seed: {randomseed}")
@@ -138,9 +140,11 @@ def shuffler(randoBool, toRando, inputType):
         random.shuffle(shufflelist)
         filecount = 0
         while filecount < len(toRando):
-            destfile = f'shuffled/'+'/'.join(toRando[filecount].split('/')[1:])
+            destfile = 'shuffled'
+            for newpath in toRando[filecount].split(os.path.sep)[1:]:
+                destfile = os.path.join(destfile,newpath)
 
-            progressbar = f"Randomising {inputType}: {filecount+1} of {len(toRando)}: {shufflelist[filecount].split('/')[::-1][0]} -> {destfile.split('/')[::-1][0]}"
+            progressbar = f"Randomising {inputType}: {filecount+1} of {len(toRando)}: {shufflelist[filecount].split(os.path.sep)[::-1][0]} -> {destfile.split(os.path.sep)[::-1][0]}"
             print2(progressbar, True)
 
             makepath(destfile)
@@ -202,7 +206,7 @@ if randomisetext and (languages != [] or specialtexts != []):
     totallangs = len(languages) + len(specialtexts)
     for lang in languages:
         processedlangs += 1
-        progressbar = f"Randomising text: {processedlangs} of {totallangs}: {lang.split('/')[::-1][0]}"
+        progressbar = f"Randomising text: {processedlangs} of {totallangs}: {lang.split(os.path.sep)[::-1][0]}"
         print2(progressbar, True)
 
         with open(lang, encoding='utf-8') as f:
@@ -219,7 +223,7 @@ if randomisetext and (languages != [] or specialtexts != []):
 
     for tfile in specialtexts:
         processedlangs += 1
-        progressbar = f"Randomising text: {processedlangs} of {totallangs}: {lang.split('/')[::-1][0]}"
+        progressbar = f"Randomising text: {processedlangs} of {totallangs}: {lang.split(os.path.sep)[::-1][0]}"
         print2(progressbar, True)
 
         with open(tfile, encoding='utf-8') as f:
@@ -240,13 +244,13 @@ if randomisetext and (languages != [] or specialtexts != []):
 
 print2("Creating meta files")
 if "16x16" in images.keys():
-    shutil.copyfile(random.choice(images["16x16"]), 'shuffled/pack.png')
-elif os.path.exists(resourcepack+'/pack.png'):
-    shutil.copyfile(resourcepack+'/pack.png', 'shuffled/pack.png')
+    shutil.copyfile(random.choice(images["16x16"]), os.path.join('shuffled','pack.png'))
+elif os.path.exists(os.path.join(resourcepack,'pack.png')):
+    shutil.copyfile(os.path.join(resourcepack,'pack.png'), os.path.join(shuffled,'pack.png'))
 
-makepath('shuffled/pack.mcmeta')
-with open("shuffled/pack.mcmeta", "w") as descfile:
-    descfile.write('{"pack":{"pack_format":4,"description":"Minecraft Shuffled by noellekiq"}}')
+makepath(os.path.join(shuffled,'pack.mcmeta'))
+with open(os.path.join(shuffled,'pack.mcmeta'), "w") as descfile:
+    descfile.write('{"pack":{"pack_format":4,"description":"Minecraft Shuffled by lexikiq"}}')
 
 print2('Installing to resource pack folder')
 
