@@ -4,7 +4,7 @@ This is a set of programs to randomise data about Minecraft.
 
 Requires Python 3.6+ to run. (~~Experimental compiled builds are avaiable from the releases tab.~~ These are extra broken right now, please use Python to run.)
 
-tl;dr just open randomize.bat if you are too lazy to figure out
+tl;dr just open randomize.bat if you are too lazy to figure out idk
 
 ## `resource_randomiser.py`
 
