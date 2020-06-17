@@ -4,12 +4,14 @@ import random
 import sys
 import json
 import argparse
+import datetime
 import collections
 import collections.abc
 
 parser = argparse.ArgumentParser(description='Randomise the data of a Minecraft datapack folder.')
 parser.add_argument('-f', '--folder', default='data', type=str, dest='data', help='specifies the data folder')
-parser.add_argument('-s', '--seed', default=random.randrange(sys.maxsize), type=int, dest='seed', help='specifies a random seed')
+parser.add_argument('-s', '--seed', default=int(datetime.datetime.timestamp(datetime.datetime.now())), type=int, dest='seed', help='specifies a random seed')
+parser.add_argument('-r', '--randomlootamountmax', default='0', type=int, dest='randomlootamount', help='randomized loot amount max - 0 for no')
 parser.add_argument('--noadvancements', action='store_false', dest='advancements', help='disables randomised advancements')
 parser.add_argument('--noloottables', action='store_false', dest='loottables', help='disables randomised loot tables')
 parser.add_argument('--preservechances', action='store_false', dest='lootchances', help='[loot] preserves normal loot chances instead of guranteed chance')
@@ -26,6 +28,7 @@ randomiserecipes = args.recipes
 randomisestructures = args.structures
 randomisetags = args.tags
 preserveloot = args.lootchances
+randomlootamount = args.randomlootamount
 
 random.seed(randomseed)
 
@@ -126,7 +129,7 @@ def shuffler(randoBool, toRando, inputType):
                 destfile = os.path.join(destfile,newpath)
 
             progressbar = f"Randomising {inputType}: {filecount} of {len(toRando)}: {toRando[filecount].split(os.path.sep)[::-1][0]} -> {destfile.split(os.path.sep)[::-1][0]}"
-            print2(progressbar, True)
+            print2(progressbar, False)
 
             makepath(destfile)
             if inputType == 'recipes':
@@ -157,14 +160,24 @@ def shuffler(randoBool, toRando, inputType):
                                 for rollentry in pool['entries']:
                                     if 'functions' in rollentry:
                                         for func in rollentry['functions']:
-                                            if 'count' in func:
-                                                if not isinstance(func['count'], int):
-                                                    if 'min' in func['count']:
-                                                        if func['count']['min'] <= 1:
-                                                            func['count']['min'] = 1
+                                            if randomlootamount>=1:
+                                                if 'count' in func:
+                                                        func['count']={"min": 1,"max": randomlootamount,"type": "minecraft:uniform"}
                                                 else:
-                                                    if func['count'] <= 1:
-                                                        func['count'] = 1
+                                                    pool['rolls']={"min": 1,"max": randomlootamount,"type": "minecraft:uniform"}
+                                            else:
+                                                if 'count' in func:
+                                                    if not isinstance(func['count'], int):
+                                                        if 'min' in func['count']:
+                                                            if func['count']['min'] <= 1:
+                                                                func['count']['min'] = 1
+                                                    else:
+                                                        if func['count'] <= 1:
+                                                            func['count'] = 1
+                                else:
+                                    if randomlootamount>=1:
+                                        pool['rolls']={"min": 1,"max": randomlootamount,"type": "minecraft:uniform"}
+
                         with open(destfile, 'w') as outputloot:
                             json.dump(entitty, outputloot)
             else:
@@ -198,6 +211,7 @@ if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteri
                 crit = advancements['criteria'].pop(random.randrange(len(advancements['criteria'])))
                 criterias = {**criterias, **crit}
                 for key, value in crit.items():
+                    print(key,value,"\n")
                     #requirements.append([key])
                     if 'conditions' in value:
                         if value['conditions'] != {}:
@@ -277,7 +291,7 @@ print('Writing meta files')
 
 makepath(os.path.join('shuffled','pack.mcmeta'))
 with open(os.path.join('shuffled','pack.mcmeta'), "w") as descfile:
-    descfile.write('{"pack":{"pack_format": 1,"description": "MC Data Randomizer, Seed: '+str(randomseed)+'"}}')
+    descfile.write('{"pack":{"pack_format": 4,"description": "MC Data Randomizer, Seed: '+str(randomseed)+'"}}')
 
 initfilepath = os.path.join('shuffled','data',f'random_data_{randomseed}','functions','reset.mcfunction')
 makepath(initfilepath)
@@ -302,10 +316,10 @@ try:
         destfolder = os.path.join('%APPDATA%','.minecraft','saves','WORLD_HERE','datapacks')
     else:
         destfolder = '*failed to identify OS*'
-    printmsg = "File output at random_data.zip! Please copy over to your world's 'datapacks' folder"
+    printmsg = "File output at "+'random_data_'+str(randomseed)+"! Please copy over to your world's 'datapacks' folder"
     if destfolder != '':
         printmsg += f" ({destfolder})"
-    shutil.make_archive('random_data', 'zip', 'shuffled')
+    shutil.make_archive('random_data_'+str(randomseed), 'zip', 'shuffled')
     print(printmsg)
     shutil.rmtree('shuffled')
 except Exception as e:

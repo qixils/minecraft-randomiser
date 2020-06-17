@@ -1,6 +1,6 @@
 {
-  "pack": {
-    "pack_format": 4,
-    "description": "1.14 default resource pack"
-  }
+    "pack": {
+        "description": "The default data for Minecraft",
+        "pack_format": 5
+    }
 }
