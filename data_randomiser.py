@@ -341,7 +341,7 @@ try:
         destfolder = os.path.join('%APPDATA%','.minecraft','saves','WORLD_HERE','datapacks')
     else:
         destfolder = '*failed to identify OS*'
-    printmsg = "File output at "+'random_data_'+str(randomseed)+"! Please copy over to your world's 'datapacks' folder \n OR install in upon world creation screen"
+    printmsg = "File output at "+'random_data_'+str(randomseed)+"! Please copy over to your world's 'datapacks' folder \n OR install in upon world creation screen."
     if destfolder != '':
         printmsg += f" ({destfolder})"
     shutil.make_archive('random_data_'+str(randomseed), 'zip', 'shuffled')
