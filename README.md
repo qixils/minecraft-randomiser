@@ -4,6 +4,8 @@ This is a set of programs to randomise data about Minecraft.
 
 Requires Python 3.6+ to run. (~~Experimental compiled builds are avaiable from the releases tab.~~ These are extra broken right now, please use Python to run.)
 
+tl;dr just open randomize.bat if you are too lazy to figure out
+
 ## `resource_randomiser.py`
 
 This randomises every single image, sound, shader, and language file of a resource pack and automatically installs it into your resource pack folder.
@@ -53,4 +55,5 @@ I tested it and it kinda works on 1.16-pre7 lol
 
 ~~Please report any bugs for either program, especially on Windows and Mac, as they have had little testing. Feature requests are also allowed.~~
 
-Please report bugs but I might not know how to fix but ill do best i can
+Please report bugs but I might not know how to fix but ill do best i can.
+

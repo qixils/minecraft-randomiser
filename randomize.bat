@@ -1,2 +1,2 @@
 @echo off
-py data_randomiser.py --noadvancements --randomlootamount 64
+py data_randomiser.py
