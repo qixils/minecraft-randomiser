@@ -1,5 +1,5 @@
 shuffle.zip
-random_data.zip
+random_data_*.zip
 shuffle/
 build/
 dist/
