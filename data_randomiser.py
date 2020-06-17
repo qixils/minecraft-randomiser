@@ -217,6 +217,7 @@ if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteri
                         if value['conditions'] != {}:
                             for subkey, subvalue in value['conditions'].items():
                                 if subkey == 'items' or subkey == 'victims':
+                                    """ 
                                     itemlist = []
                                     for itemdict in subvalue:
                                         if 'count' in itemdict:
@@ -224,14 +225,17 @@ if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteri
                                         else:
                                             for subsubkey, subsubvalue in itemdict.items():
                                                 itemlist.append(subsubvalue.replace('minecraft:', ''))
-                                    conditions.append(f"{subkey}:{'+'.join(itemlist)}")
+                                    conditions.append(f"{subkey}:{'+'.join(itemlist)}") """
+                                    pass
                                 elif subkey == 'item':
-                                    conditions.append(f"{subkey}:{subvalue['item'].replace('minecraft:', '')}")
+                                    conditions.append(f"{subkey}:{subvalue}")
                                 elif subkey == 'entity' or subkey == 'parent':
-                                    if 'catType' in subvalue:
-                                        conditions.append(f"cat:{subvalue['catType'].split('/')[::-1][0].split('.')[0]}")
-                                    else:
-                                        conditions.append(f"{subkey}:{subvalue['type'].replace('minecraft:','')}")
+                                    for eachsubvalue in subvalue:
+                                        if 'catType' in eachsubvalue['predicate']:
+                                            conditions.append(f"cat:{eachsubvalue['predicate']['catType'].split('/')[::-1][0].split('.')[0]}")
+                                        else:
+                                            for oneofthekeysinsubvalue,oneofthevaluesinsubvalue in eachsubvalue.items():
+                                                conditions.append(f"{subkey}:{eachsubvalue['predicate']['type'].replace('minecraft:','')}")
                                 elif subkey == 'slots' or subkey == 'distance':
                                     for subsubkey, subsubvalue in subvalue.items():
                                         for subsubsubkey, subsubsubvalue in subsubvalue.items():
@@ -263,10 +267,31 @@ if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteri
                                 elif subkey == 'level' and isinstance(subvalue, collections.abc.Mapping):
                                     for subsubkey, subsubvalue in subvalue.items():
                                         conditions.append(f"{subkey}:{subsubkey}={subsubvalue}")
+                                elif isinstance(subvalue,list):
+                                    subvalue = ((str(subvalue)))
+                                    conditions.append(f"{subkey}:{subvalue}")
+                                    pass
+                                elif isinstance(subvalue,str):
+                                    conditions.append(f"{subkey}:{subvalue}")
+                                    pass
+                                elif isinstance(subvalue,int):
+                                    conditions.append(f"{subkey}:{subvalue}")
+                                    pass
+                                elif isinstance(subvalue,dict):
+                                    for keysoftherest,valuesoftherest in subvalue.items():
+                                        if isinstance(valuesoftherest,dict):
+                                            temp=[]
+                                            for fixvalue in valuesoftherest:
+                                                fixvalue.replace('minecraft:', '')
+                                                temp.append(str(fixvalue))
+                                            conditions.append(f"{keysoftherest}:{temp}")
+                                        else:
+                                            conditions.append(f"{keysoftherest}:{valuesoftherest}")
+                                    else:
+                                        conditions.append(f"{keysoftherest}:{valuesoftherest}")
                                 else:
-                                    if isinstance(subvalue, int):
-                                        subvalue = str(subvalue)
-                                    conditions.append(f"{subkey}:{subvalue.replace('minecraft:', '')}")
+                                    conditions.append(f"{subkey}:{subvalue}")
+                                    pass
                         else:
                             conditions.append(value['trigger'].replace('minecraft:',''))
                     else:
@@ -296,7 +321,7 @@ with open(os.path.join('shuffled','pack.mcmeta'), "w") as descfile:
 initfilepath = os.path.join('shuffled','data',f'random_data_{randomseed}','functions','reset.mcfunction')
 makepath(initfilepath)
 with open(initfilepath, "w") as initfile:
-    initfile.write('tellraw @a ["",{"text":"Data file randomiser by lexikiq / Seed '+str(randomseed)+'","color":"green"}]')
+    initfile.write('tellraw @a ["",{"text":"Data file randomiser by lexikiq - Aikoyori tries to fix this \n Seed '+str(randomseed)+'","color":"green"}]')
     #initfile.write('tellraw @a ["",{"text":"Data file randomiser by lexikiq","color":"green"}]')
 
 loadjspath = os.path.join('shuffled','data','minecraft','tags','functions','load.json')
@@ -316,7 +341,7 @@ try:
         destfolder = os.path.join('%APPDATA%','.minecraft','saves','WORLD_HERE','datapacks')
     else:
         destfolder = '*failed to identify OS*'
-    printmsg = "File output at "+'random_data_'+str(randomseed)+"! Please copy over to your world's 'datapacks' folder"
+    printmsg = "File output at "+'random_data_'+str(randomseed)+"! Please copy over to your world's 'datapacks' folder \n OR install in upon world creation screen"
     if destfolder != '':
         printmsg += f" ({destfolder})"
     shutil.make_archive('random_data_'+str(randomseed), 'zip', 'shuffled')
