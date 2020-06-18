@@ -31,9 +31,8 @@ preserveloot = args.lootchances
 randomlootamount = args.randomlootamount
 
 random.seed(randomseed)
-global longestbar
-
 def print2(toprint, toupdate=False):
+    global longestbar
     if toupdate:
         if len(toprint) > longestbar:
             longestbar = len(toprint)
