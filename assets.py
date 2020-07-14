@@ -17,7 +17,7 @@ elif system.startswith('darwin'):
     destfolder = os.path.expanduser(os.path.join('~', 'Library', 'Application Support', 'minecraft'))
 elif system.startswith('win'):
     destfolder = os.path.expandvars(os.path.join('%APPDATA%', '.minecraft'))
-with open('/home/noahkiq/.minecraft/assets/indexes/1.14.json') as f:
+with open(destfolder+'/assets/indexes/1.16.json') as f:
     data = json.load(f)
 for key, value in data["objects"].items():
     if '/lang/' in key.lower() or '.ogg' in key.lower():

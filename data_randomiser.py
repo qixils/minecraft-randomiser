@@ -4,12 +4,14 @@ import random
 import sys
 import json
 import argparse
+import datetime
 import collections
 import collections.abc
 
 parser = argparse.ArgumentParser(description='Randomise the data of a Minecraft datapack folder.')
 parser.add_argument('-f', '--folder', default='data', type=str, dest='data', help='specifies the data folder')
-parser.add_argument('-s', '--seed', default=random.randrange(sys.maxsize), type=int, dest='seed', help='specifies a random seed')
+parser.add_argument('-s', '--seed', default=int(datetime.datetime.timestamp(datetime.datetime.now())), type=int, dest='seed', help='specifies a random seed')
+parser.add_argument('-r', '--randomlootamountmax', default='0', type=int, dest='randomlootamount', help='randomized loot amount max - 0 for no')
 parser.add_argument('--noadvancements', action='store_false', dest='advancements', help='disables randomised advancements')
 parser.add_argument('--noloottables', action='store_false', dest='loottables', help='disables randomised loot tables')
 parser.add_argument('--preservechances', action='store_false', dest='lootchances', help='[loot] preserves normal loot chances instead of guranteed chance')
@@ -26,9 +28,9 @@ randomiserecipes = args.recipes
 randomisestructures = args.structures
 randomisetags = args.tags
 preserveloot = args.lootchances
+randomlootamount = args.randomlootamount
 
 random.seed(randomseed)
-
 def print2(toprint, toupdate=False):
     global longestbar
     if toupdate:
@@ -126,7 +128,7 @@ def shuffler(randoBool, toRando, inputType):
                 destfile = os.path.join(destfile,newpath)
 
             progressbar = f"Randomising {inputType}: {filecount} of {len(toRando)}: {toRando[filecount].split(os.path.sep)[::-1][0]} -> {destfile.split(os.path.sep)[::-1][0]}"
-            print2(progressbar, True)
+            print2(progressbar, False)
 
             makepath(destfile)
             if inputType == 'recipes':
@@ -157,14 +159,24 @@ def shuffler(randoBool, toRando, inputType):
                                 for rollentry in pool['entries']:
                                     if 'functions' in rollentry:
                                         for func in rollentry['functions']:
-                                            if 'count' in func:
-                                                if not isinstance(func['count'], int):
-                                                    if 'min' in func['count']:
-                                                        if func['count']['min'] <= 1:
-                                                            func['count']['min'] = 1
+                                            if randomlootamount>=1:
+                                                if 'count' in func:
+                                                        func['count']={"min": 1,"max": randomlootamount,"type": "minecraft:uniform"}
                                                 else:
-                                                    if func['count'] <= 1:
-                                                        func['count'] = 1
+                                                    pool['rolls']={"min": 1,"max": randomlootamount,"type": "minecraft:uniform"}
+                                            else:
+                                                if 'count' in func:
+                                                    if not isinstance(func['count'], int):
+                                                        if 'min' in func['count']:
+                                                            if func['count']['min'] <= 1:
+                                                                func['count']['min'] = 1
+                                                    else:
+                                                        if func['count'] <= 1:
+                                                            func['count'] = 1
+                                else:
+                                    if randomlootamount>=1:
+                                        pool['rolls']={"min": 1,"max": randomlootamount,"type": "minecraft:uniform"}
+
                         with open(destfile, 'w') as outputloot:
                             json.dump(entitty, outputloot)
             else:
@@ -198,11 +210,13 @@ if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteri
                 crit = advancements['criteria'].pop(random.randrange(len(advancements['criteria'])))
                 criterias = {**criterias, **crit}
                 for key, value in crit.items():
+                    print(key,value,"\n")
                     #requirements.append([key])
                     if 'conditions' in value:
                         if value['conditions'] != {}:
                             for subkey, subvalue in value['conditions'].items():
                                 if subkey == 'items' or subkey == 'victims':
+                                    """ 
                                     itemlist = []
                                     for itemdict in subvalue:
                                         if 'count' in itemdict:
@@ -210,14 +224,17 @@ if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteri
                                         else:
                                             for subsubkey, subsubvalue in itemdict.items():
                                                 itemlist.append(subsubvalue.replace('minecraft:', ''))
-                                    conditions.append(f"{subkey}:{'+'.join(itemlist)}")
+                                    conditions.append(f"{subkey}:{'+'.join(itemlist)}") """
+                                    pass
                                 elif subkey == 'item':
-                                    conditions.append(f"{subkey}:{subvalue['item'].replace('minecraft:', '')}")
+                                    conditions.append(f"{subkey}:{subvalue}")
                                 elif subkey == 'entity' or subkey == 'parent':
-                                    if 'catType' in subvalue:
-                                        conditions.append(f"cat:{subvalue['catType'].split('/')[::-1][0].split('.')[0]}")
-                                    else:
-                                        conditions.append(f"{subkey}:{subvalue['type'].replace('minecraft:','')}")
+                                    for eachsubvalue in subvalue:
+                                        if 'catType' in eachsubvalue['predicate']:
+                                            conditions.append(f"cat:{eachsubvalue['predicate']['catType'].split('/')[::-1][0].split('.')[0]}")
+                                        else:
+                                            for oneofthekeysinsubvalue,oneofthevaluesinsubvalue in eachsubvalue.items():
+                                                conditions.append(f"{subkey}:{eachsubvalue['predicate']['type'].replace('minecraft:','')}")
                                 elif subkey == 'slots' or subkey == 'distance':
                                     for subsubkey, subsubvalue in subvalue.items():
                                         for subsubsubkey, subsubsubvalue in subsubvalue.items():
@@ -249,10 +266,31 @@ if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteri
                                 elif subkey == 'level' and isinstance(subvalue, collections.abc.Mapping):
                                     for subsubkey, subsubvalue in subvalue.items():
                                         conditions.append(f"{subkey}:{subsubkey}={subsubvalue}")
+                                elif isinstance(subvalue,list):
+                                    subvalue = ((str(subvalue)))
+                                    conditions.append(f"{subkey}:{subvalue}")
+                                    pass
+                                elif isinstance(subvalue,str):
+                                    conditions.append(f"{subkey}:{subvalue}")
+                                    pass
+                                elif isinstance(subvalue,int):
+                                    conditions.append(f"{subkey}:{subvalue}")
+                                    pass
+                                elif isinstance(subvalue,dict):
+                                    for keysoftherest,valuesoftherest in subvalue.items():
+                                        if isinstance(valuesoftherest,dict):
+                                            temp=[]
+                                            for fixvalue in valuesoftherest:
+                                                fixvalue.replace('minecraft:', '')
+                                                temp.append(str(fixvalue))
+                                            conditions.append(f"{keysoftherest}:{temp}")
+                                        else:
+                                            conditions.append(f"{keysoftherest}:{valuesoftherest}")
+                                    else:
+                                        conditions.append(f"{keysoftherest}:{valuesoftherest}")
                                 else:
-                                    if isinstance(subvalue, int):
-                                        subvalue = str(subvalue)
-                                    conditions.append(f"{subkey}:{subvalue.replace('minecraft:', '')}")
+                                    conditions.append(f"{subkey}:{subvalue}")
+                                    pass
                         else:
                             conditions.append(value['trigger'].replace('minecraft:',''))
                     else:
@@ -277,12 +315,12 @@ print('Writing meta files')
 
 makepath(os.path.join('shuffled','pack.mcmeta'))
 with open(os.path.join('shuffled','pack.mcmeta'), "w") as descfile:
-    descfile.write('{"pack":{"pack_format": 1,"description": "MC Data Randomizer, Seed: '+str(randomseed)+'"}}')
+    descfile.write('{"pack":{"pack_format": 5,"description": "MC Data Randomizer, Seed: '+str(randomseed)+'"}}')
 
 initfilepath = os.path.join('shuffled','data',f'random_data_{randomseed}','functions','reset.mcfunction')
 makepath(initfilepath)
 with open(initfilepath, "w") as initfile:
-    initfile.write('tellraw @a ["",{"text":"Data file randomiser by lexikiq / Seed '+str(randomseed)+'","color":"green"}]')
+    initfile.write('tellraw @a ["",{"text":"Data file randomiser by lexikiq - Aikoyori tries to fix this \n Seed '+str(randomseed)+'","color":"green"}]')
     #initfile.write('tellraw @a ["",{"text":"Data file randomiser by lexikiq","color":"green"}]')
 
 loadjspath = os.path.join('shuffled','data','minecraft','tags','functions','load.json')
@@ -302,10 +340,10 @@ try:
         destfolder = os.path.join('%APPDATA%','.minecraft','saves','WORLD_HERE','datapacks')
     else:
         destfolder = '*failed to identify OS*'
-    printmsg = "File output at random_data.zip! Please copy over to your world's 'datapacks' folder"
+    printmsg = "File output at "+'random_data_'+str(randomseed)+"! Please copy over to your world's 'datapacks' folder \n OR install in upon world creation screen."
     if destfolder != '':
         printmsg += f" ({destfolder})"
-    shutil.make_archive('random_data', 'zip', 'shuffled')
+    shutil.make_archive('random_data_'+str(randomseed), 'zip', 'shuffled')
     print(printmsg)
     shutil.rmtree('shuffled')
 except Exception as e:
