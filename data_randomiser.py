@@ -315,7 +315,7 @@ print('Writing meta files')
 
 makepath(os.path.join('shuffled','pack.mcmeta'))
 with open(os.path.join('shuffled','pack.mcmeta'), "w") as descfile:
-    descfile.write('{"pack":{"pack_format": 4,"description": "MC Data Randomizer, Seed: '+str(randomseed)+'"}}')
+    descfile.write('{"pack":{"pack_format": 5,"description": "MC Data Randomizer, Seed: '+str(randomseed)+'"}}')
 
 initfilepath = os.path.join('shuffled','data',f'random_data_{randomseed}','functions','reset.mcfunction')
 makepath(initfilepath)
