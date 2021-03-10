@@ -29,17 +29,6 @@ preserveloot = args.lootchances
 
 random.seed(randomseed)
 
-def print2(toprint, toupdate=False):
-    global longestbar
-    if toupdate:
-        if len(toprint) > longestbar:
-            longestbar = len(toprint)
-        print(toprint.ljust(longestbar, ' '), end='\r', flush=True)
-    else:
-        print(toprint.ljust(longestbar, ' '))
-        longestbar = 0
-longestbar = 0
-
 if datafolder == "shuffle":
     print("The input data folder may not be named 'shuffle'.")
     input('Press any key to exit.')
@@ -49,12 +38,14 @@ if os.path.exists("shuffle"):
     input('Press any key to exit.')
     sys.exit()
 
+
 def makepath(path):
     if not os.path.exists(os.path.dirname(path)):
         try:
             os.makedirs(os.path.dirname(path))
         except:
             print('DEBUG: tried to create an existing folder')
+
 
 if not (randomiseadvancements or randomiseloottables or randomiserecipes or randomisestructures or randomisetags):
     print('Successfully randomised nothing!')
@@ -69,7 +60,7 @@ if not os.path.exists(datafolder):
     # input('Press any key to exit.')
     # sys.exit()
 
-print2(f"Preparing data")
+print(f"Preparing data")
 
 advlist = []
 advancements = {'icons': [], 'names': [], 'criteria': [], 'criteria_count': [], 'rewards': []}
@@ -82,9 +73,9 @@ tags = {'blocks': [], 'entity_types': [], 'fluids': [], 'items': []}
 #find the files to swap
 for dirpath, dirs, files in os.walk(datafolder):
     for file in files:
-        fullfilepath = os.path.join(dirpath,file)
+        fullfilepath = os.path.join(dirpath, file)
 
-        if dirpath.startswith(os.path.join(datafolder,'advancements')) and randomiseadvancements:
+        if dirpath.startswith(os.path.join(datafolder, 'advancements')) and randomiseadvancements:
             with open(fullfilepath, 'r') as advfile:
                 advdata = json.loads(advfile.read())
                 thisshallpass = True
@@ -113,7 +104,7 @@ for dirpath, dirs, files in os.walk(datafolder):
         # elif dirpath.startswith(datafolder+"/tags") and randomisetags:
             # tags[dirpath.split('/')[2]].append(fullfilepath)
 
-print2(f"Random Seed: {randomseed}")
+print(f"Random Seed: {randomseed}")
 def shuffler(randoBool, toRando, inputType):
     if randoBool and toRando != []:
         print2("Randomising "+inputType, True)
@@ -170,7 +161,7 @@ def shuffler(randoBool, toRando, inputType):
             else:
                 shutil.copyfile(shufflelist[filecount], destfile)
             filecount += 1
-        print2('Randomised '+inputType)
+        print('Randomised '+inputType)
 
 if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteria': [], 'criteria_count': [], 'rewards': []}:
     print2("Randomising advancements", True)
@@ -266,7 +257,7 @@ if randomiseadvancements and advancements != {'icons': [], 'names': [], 'criteri
             makepath(destfile)
             with open(destfile, 'w') as truedestlol:
                 json.dump(advjson, truedestlol)
-    print2("Randomised advancements")
+    print("Randomised advancements")
 shuffler(randomiseloottables, loottables, "loot tables")
 shuffler(randomiserecipes, recipes, "recipes")
 shuffler(randomisestructures, structures, "structures")
