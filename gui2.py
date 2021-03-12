@@ -7,6 +7,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QLabel, QCheckBox, QVBoxLayout, QPushButton, QFrame, QLineEdit, QMessageBox, \
     QWidget, QHBoxLayout
 from data_randomiser import run as data_run
+from resource_randomiser import run as res_run
 
 app = QApplication([])
 base = QFrame()
@@ -60,7 +61,7 @@ class QHLine(QFrame):
 
 class Tab:
     def __init__(self, name: str, options: typing.List[str], func: typing.Callable):
-        self.func = data_run
+        self.func = func
         self.name = name
         label = QLabel(name)
         layout.addWidget(label)
@@ -89,7 +90,7 @@ class Tab:
 
 data_button = Tab("Data", ["Advancements", "Loot Tables", "Recipes", "Structures", "Tags", "Preserve Chances"], data_run)
 layout.addWidget(QHLine())
-res_button = Tab("Resource", ["Textures", "Block States", "Sounds", "Texts", "Fonts", "Shaders", "Models"], data_run)
+res_button = Tab("Resource", ["Textures", "Block States", "Sounds", "Texts", "Fonts", "Shaders", "Models"], res_run)
 
 base.setLayout(layout)
 base.show()
