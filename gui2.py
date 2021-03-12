@@ -90,7 +90,7 @@ class Tab:
 
 data_button = Tab("Data", ["Advancements", "Loot Tables", "Recipes", "Structures", "Tags", "Preserve Chances"], data_run)
 layout.addWidget(QHLine())
-res_button = Tab("Resource", ["Textures", "Block States", "Sounds", "Texts", "Fonts", "Shaders", "Models"], res_run)
+res_button = Tab("Resource", ["Textures", "Models", "Block States", "Sounds", "Texts", "Fonts", "Shaders"], res_run)
 
 base.setLayout(layout)
 base.show()
