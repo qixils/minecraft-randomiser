@@ -18,8 +18,8 @@ layout = QVBoxLayout()
 
 
 class IconLabel(QWidget):
-    IconSize = QSize(16, 16)
-    HorizontalSpacing = 2
+    size = QSize(16, 16)
+    spacing = 2
 
     def __init__(self, icon_name, text, final_stretch=True):
         super().__init__()
@@ -29,12 +29,14 @@ class IconLabel(QWidget):
         self.setLayout(_layout)
 
         icon = QLabel()
-        icon.setPixmap(QIcon(f"icons/{icon_name}.png").pixmap(self.IconSize))
+        icon.setPixmap(QIcon(f"icons/{icon_name}.png").pixmap(self.size))
 
-        _layout.addWidget(icon)
-        spacing = self.HorizontalSpacing
         if icon_name == "seed":
-            spacing += 5
+            _layout.addSpacing(3)
+        _layout.addWidget(icon)
+        spacing = self.spacing
+        if icon_name == "seed":
+            spacing += 3
         _layout.addSpacing(spacing)
         _layout.addWidget(QLabel(text))
 
