@@ -12,7 +12,7 @@ from resource_randomiser import run as res_run
 app = QApplication([])
 base = QFrame()
 base.setWindowTitle("Minecraft Randomizer")
-base.setStyleSheet("background-image: url(bg.png); color: black;")
+base.setStyleSheet("background-image: url(icons/bg.png); color: black;")
 base.setWindowIcon(QIcon("icons/advancements.png"))
 layout = QVBoxLayout()
 
