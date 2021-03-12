@@ -13,7 +13,7 @@ app = QApplication([])
 base = QFrame()
 base.setWindowTitle("Minecraft Randomizer")
 base.setStyleSheet("background-image: url(bg.png); color: black;")
-base.setWindowIcon(QIcon("icons/bg.png"))
+base.setWindowIcon(QIcon("icons/advancements.png"))
 layout = QVBoxLayout()
 
 
