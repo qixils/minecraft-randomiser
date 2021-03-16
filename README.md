@@ -1,8 +1,11 @@
-# Minecraft Randomiser
+# Minecraft Randomizer
 
-This is a set of programs to randomise data about Minecraft.
+This software allows ranomizing most aspects of the game that can be modified through vanilla.
+Textures, sounds, shaders, languages, fonts, recipes, loot tables, advancements, and more can be randomized.
+The data pack randomizer works on 1.13-1.14 and the resource pack randomizer works on 1.13+.
+A handy GUI is available to use and requires the pyqt5 package to run.
 
-Requires Python 3.6+ to run. (~~Experimental compiled builds are avaiable from the releases tab.~~ These are extra broken right now, please use Python to run.)
+This software requires Python 3.6+ to run.
 
 ## `resource_randomiser.py`
 
@@ -13,7 +16,7 @@ This has been tested on Minecraft 1.13.2 & 1.14, and likely works on other versi
 The regular Minecraft resource pack is included by default. The images, sounds, and other files included in said resource pack are owned and created by Mojang AB and I
 take no credit for creating them.
 
-### Usage
+### Command-Line Usage
 
 To use, simply run `resource_randomiser.py` in python3, or double click the executable file. Options can be viewed from the command line using `resource_randomiser.py -h`
 
